@@ -1,0 +1,58 @@
+# ======================
+# Python
+# ======================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ======================
+# Virtual Environment
+# ======================
+.venv/
+venv/
+env/
+
+# ======================
+# Flask
+# ======================
+instance/
+.webassets-cache
+
+# ======================
+# Flask-Migrate / Alembic
+# ======================
+migrations/versions/__pycache__/
+*.log
+
+# ======================
+# Testes
+# ======================
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ======================
+# SQLite (caso use em testes)
+# ======================
+*.sqlite3
+*.db
+
+# ======================
+# IDEs / Editores
+# ======================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ======================
+# Sistema Operacional
+# ======================
+.DS_Store
+Thumbs.db
+
+# ======================
+# Variáveis de ambiente
+# ======================
+.env
+.env.*
