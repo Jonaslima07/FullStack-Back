@@ -7,7 +7,7 @@ class Comercio(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome_comercio = db.Column(db.String(100), nullable=False)
     segmento = db.Column(db.String(100), nullable=False)
-    telefone = db.Column(db.String(20), nullable=False)
+    telefone = db.Column(db.String(11), nullable=False)
     cnpj = db.Column(db.String(14), nullable=False, unique=True)
 
     cadastro_completo = db.Column(db.Boolean, default=False)

@@ -76,3 +76,16 @@ def atualizar_usuario(id):
     db.session.commit()
 
     return usuario_schema.dump(usuario), 200
+
+@usuarios_bp.route("/usuarios/<int:id>", methods=["DELETE"])
+
+def deletar_usuario(id):
+    usuario = Usuario.query.get(id)
+
+    if not usuario:
+        return jsonify({"error: usuário não encontrado"}), 404
+    
+    db.session.delete(usuario)
+    db.session.commit()
+
+    return jsonify({"message: usuário deletado com sucesso!"}), 200

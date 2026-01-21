@@ -6,6 +6,8 @@ from flask_migrate import Migrate
 
 from helpers.database import db
 from resources.Usuarios import usuarios_bp
+from resources.Produtos import produtos_bp
+from resources.Comercios import comercios_bp
 
 load_dotenv()
 
@@ -22,3 +24,5 @@ migrate = Migrate(app, db)
 
 # Blueprints
 app.register_blueprint(usuarios_bp)
+app.register_blueprint(produtos_bp)
+app.register_blueprint(comercios_bp)
