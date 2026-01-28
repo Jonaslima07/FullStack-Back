@@ -23,5 +23,5 @@ class ComercioSchema(Schema):
         validate=validate.Length(equal=14)
     )
 
-    cadastro_completo = fields.Bool(dump_only=True)
 
+    cadastro_completo = fields.Bool(required=True)

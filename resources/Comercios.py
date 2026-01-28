@@ -4,6 +4,7 @@ from marshmallow import ValidationError
 from models.Comercios import Comercio
 from schema.comercio_schema import ComercioSchema
 from helpers.database import db
+from extensions.cache import cache
 
 comercios_bp = Blueprint("comercios", __name__)
 
@@ -13,8 +14,28 @@ comercios_schema = ComercioSchema(many=True)
 
 @comercios_bp.route("/comercios", methods=["GET"])
 def buscar_comercios():
+    cache_key = "comercios:lista"
+
+   
+    comercios_cache = cache.get(cache_key)
+
+    if comercios_cache:
+        return jsonify({
+            "origem": "redis",
+            "dados": comercios_cache
+        }), 200
+
+    
     comercios = Comercio.query.all()
-    return jsonify(comercios_schema.dump(comercios)), 200
+    dados = comercios_schema.dump(comercios)
+
+    
+    cache.set(cache_key, dados, timeout=120)
+
+    return jsonify({
+        "origem": "banco",
+        "dados": dados
+    }), 200
 
 @comercios_bp.route("/comercios", methods=["POST"])
 def criar_comercio():
@@ -22,6 +43,7 @@ def criar_comercio():
         dados = comercio_schema.load(request.json)
 
     except ValidationError as err:
+        print("ERROS DO MARSHMALLOW:", err.messages)
         return jsonify(err.messages), 400
     
     comercio = Comercio(
