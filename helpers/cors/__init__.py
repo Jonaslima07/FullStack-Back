@@ -3,8 +3,11 @@ from flask_cors import CORS
 def init_app(app):
     CORS(
         app,
-        resources={r"/*": {"origins": "http://localhost:5173"}},
-        supports_credentials=True,
+        resources={r"/*": {"origins": [
+            "http://localhost:5173",
+            "http://127.0.0.1:5173"
+        ]}},
         allow_headers=["Content-Type", "Authorization"],
-        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        supports_credentials=True
     )

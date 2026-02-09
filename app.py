@@ -17,11 +17,10 @@ load_dotenv()
 
 app = Flask(__name__)
 
-
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-app.config['JWT_SECRET_KEY'] = os.getenv('SECRET_KEY')
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+app.config["JWT_SECRET_KEY"] = os.getenv("SECRET_KEY")
 
 app.config.update({
     "CACHE_TYPE": "RedisCache",
@@ -32,14 +31,17 @@ app.config.update({
 
 
 cors.init_app(app)
+
 db.init_app(app)
 ma = Marshmallow(app)
 migrate = Migrate(app, db)
 cache.init_app(app)
 jwt = JWTManager(app)
 
-
 app.register_blueprint(usuarios_bp)
 app.register_blueprint(produtos_bp)
 app.register_blueprint(comercios_bp)
 app.register_blueprint(authFirebase_bp)
+
+if __name__ == "__main__":
+    app.run(debug=True, port=5000)
