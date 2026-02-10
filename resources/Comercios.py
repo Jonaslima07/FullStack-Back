@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from marshmallow import ValidationError
 from sqlalchemy.exc import IntegrityError
+from flask_jwt_extended import jwt_required, get_jwt_identity
+
 
 from models.Comercios import Comercio
 from schema.comercio_schema import ComercioSchema
@@ -13,9 +15,7 @@ comercio_schema = ComercioSchema()
 comercios_schema = ComercioSchema(many=True)
 
 
-# =========================
-# GET - LISTAR COMÉRCIOS
-# =========================
+
 @comercios_bp.route("/comercios", methods=["GET"])
 def buscar_comercios():
     cache_key = "comercios:lista"
@@ -38,40 +38,56 @@ def buscar_comercios():
     }), 200
 
 
-# =========================
-# POST - CRIAR COMÉRCIO
-# =========================
+
+@comercios_bp.route("/comercios/me", methods=["GET"])
+@jwt_required()
+def meu_comercio():
+    usuario_id = get_jwt_identity()
+
+    comercio = Comercio.query.filter_by(usuario_id=usuario_id).first()
+
+    if not comercio:
+        return jsonify({"has_comercio": False}), 200
+
+    return jsonify({
+        "has_comercio": True,
+        "comercio": {
+            "id": comercio.id,
+            "nome_comercio": comercio.nome_comercio
+        }
+    }), 200
+
+
+
 @comercios_bp.route("/comercios", methods=["POST"])
+@jwt_required()
 def criar_comercio():
     try:
+        user_id = int(get_jwt_identity())
         dados = comercio_schema.load(request.json)
 
-        nome = dados["nome_comercio"]
-        telefone = dados["telefone"]
-        cnpj = dados["cnpj"]
+       
+        comercio_existente = Comercio.query.filter_by(
+            usuario_id=user_id
+        ).first()
 
-        # 🔒 Valida duplicados
-        if Comercio.query.filter_by(nome_comercio=nome).first():
-            return jsonify({"msg": "Já existe um comércio com esse nome"}), 409
-
-        if Comercio.query.filter_by(telefone=telefone).first():
-            return jsonify({"msg": "Já existe um comércio com esse telefone"}), 409
-
-        if Comercio.query.filter_by(cnpj=cnpj).first():
-            return jsonify({"msg": "Já existe um comércio com esse CNPJ"}), 409
+        if comercio_existente:
+            return jsonify({
+                "msg": "Este usuário já possui um comércio cadastrado"
+            }), 400
 
         comercio = Comercio(
-            nome_comercio=nome,
-            segmento=dados["segmento"],
-            telefone=telefone,
-            cnpj=cnpj,
-            cadastro_completo=False
+            nome_comercio=dados["nome_comercio"],
+            segmento=dados.get("segmento"),
+            telefone=dados["telefone"],
+            cnpj=dados["cnpj"],
+            usuario_id=user_id, 
+            
         )
 
         db.session.add(comercio)
         db.session.commit()
 
-        # 🧹 limpa cache
         cache.delete("comercios:lista")
 
         return comercio_schema.dump(comercio), 201
@@ -82,13 +98,10 @@ def criar_comercio():
     except IntegrityError:
         db.session.rollback()
         return jsonify({
-            "msg": "Erro de integridade: dados já cadastrados"
+            "msg": "Telefone ou CNPJ já cadastrado"
         }), 409
 
 
-# =========================
-# PUT - ATUALIZAR COMÉRCIO
-# =========================
 @comercios_bp.route("/comercios/<int:id>", methods=["PUT"])
 def atualizar_comercio(id):
     comercio = Comercio.query.get_or_404(id)
@@ -122,9 +135,8 @@ def atualizar_comercio(id):
     return comercio_schema.dump(comercio), 200
 
 
-# =========================
-# DELETE - REMOVER COMÉRCIO
-# =========================
+
+
 @comercios_bp.route("/comercios/<int:id>", methods=["DELETE"])
 def deletar_comercio(id):
     comercio = Comercio.query.get(id)

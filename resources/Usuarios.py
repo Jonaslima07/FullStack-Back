@@ -22,6 +22,19 @@ def capturar_usuarios():
     return jsonify(usuarios_schema.dump(usuarios)), 200
 
 
+@usuarios_bp.route("/usuarios/me", methods=["GET"])
+@jwt_required()
+def obter_usuario_logado():
+    user_id = int(get_jwt_identity())
+    usuario = Usuario.query.get(user_id)
+
+    if not usuario:
+        return jsonify({"error": "Usuário não encontrado"}), 404
+
+    return jsonify(usuario_schema.dump(usuario)), 200
+
+
+
 
 @usuarios_bp.route("/usuarios", methods=["POST"])
 def criar_usuario():

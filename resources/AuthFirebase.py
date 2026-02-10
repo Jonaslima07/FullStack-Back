@@ -18,6 +18,7 @@ def auth_google():
 
         email = decoded.get("email")
         nome = decoded.get("name", "Usuário Google")
+        photo = decoded.get("picture")  # ✅ CAMPO CORRETO
 
         if not email:
             return jsonify({"error": "Email não encontrado no token"}), 400
@@ -29,14 +30,17 @@ def auth_google():
                 nome=nome,
                 email=email,
                 senha=None,
+                photo=photo,
                 cadastro_completo=False
             )
             db.session.add(usuario)
-            db.session.commit()
+        else:
+            # ✅ ATUALIZA FOTO SEMPRE NO LOGIN
+            usuario.photo = photo
+
+        db.session.commit()
 
         access_token = create_access_token(identity=str(usuario.id))
-
-        print("TOKEN GERADO:", access_token)
 
         return jsonify({
             "token": access_token,
@@ -44,12 +48,11 @@ def auth_google():
                 "id": usuario.id,
                 "nome": usuario.nome,
                 "email": usuario.email,
+                "photo": usuario.photo,
                 "cpf": usuario.cpf,
                 "cadastro_completo": usuario.cadastro_completo
             }
         }), 200
-
-
 
     except firebase_auth.ExpiredIdTokenError:
         return jsonify({"error": "Token Firebase expirado"}), 401

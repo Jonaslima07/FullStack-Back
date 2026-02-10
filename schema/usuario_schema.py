@@ -25,6 +25,11 @@ class UsuarioSchema(Schema):
         load_only=True
     )
 
+    photo = fields.Str(
+        dump_only=True  # 👈 vem do Google, só leitura
+    )
+
+
     @validates_schema
     def validar_senhas(self, data, **kwargs):
         if data.get("senha") != data.get("confirmarSenha"):
