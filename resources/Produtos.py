@@ -30,6 +30,7 @@ def criar_produto():
         quantidade = dados["quantidade"],
         preco = dados["preco"],
         marca = dados["marca"],
+        unidade= dados["unidade"], #parei aqui
         data_validade = dados["data_validade"]
     )
 
@@ -63,6 +64,9 @@ def atualizar_produtos(id):
 
     if "marca" in dados:
         produtos.marca = dados["marca"]
+
+    if "unidade" in dados:
+        produtos.unidade = dados["unidade"]
     
     if "data_validade" in dados:
         produtos.data_validade = dados["data_validade"]

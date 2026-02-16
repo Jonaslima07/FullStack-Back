@@ -9,6 +9,7 @@ class Produto(db.Model):
     quantidade = db.Column(db.Integer, default=0)
     preco = db.Column(db.Float)
     marca = db.Column(db.String(100), nullable=True)
+    unidade = db.Column(db.String(50), nullable=True)
     data_validade = db.Column(db.Date, nullable=False)
     
 

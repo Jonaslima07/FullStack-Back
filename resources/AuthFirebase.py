@@ -18,7 +18,7 @@ def auth_google():
 
         email = decoded.get("email")
         nome = decoded.get("name", "Usuário Google")
-        photo = decoded.get("picture")  # ✅ CAMPO CORRETO
+        photo = decoded.get("picture")  
 
         if not email:
             return jsonify({"error": "Email não encontrado no token"}), 400
@@ -35,12 +35,14 @@ def auth_google():
             )
             db.session.add(usuario)
         else:
-            # ✅ ATUALIZA FOTO SEMPRE NO LOGIN
+          
             usuario.photo = photo
 
         db.session.commit()
 
         access_token = create_access_token(identity=str(usuario.id))
+        print("TOKEN RECEBIDO:", access_token)
+
 
         return jsonify({
             "token": access_token,

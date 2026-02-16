@@ -19,6 +19,11 @@ class ProdutoSchema(Schema):
         validate=validate.Range(min=0)
     )
 
+    unidade = fields.Str(
+        required=True,
+        validate=validate.Length(min=2)
+    )
+
     preco = fields.Float(
         required=True,
         validate=validate.Range(min=0)
