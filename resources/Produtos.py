@@ -30,7 +30,7 @@ def criar_produto():
         quantidade = dados["quantidade"],
         preco = dados["preco"],
         marca = dados["marca"],
-        unidade= dados["unidade"], #parei aqui
+        unidade= dados["unidade"], 
         data_validade = dados["data_validade"]
     )
 
