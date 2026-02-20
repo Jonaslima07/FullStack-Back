@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from flask import Blueprint, request, jsonify
 from marshmallow import ValidationError
 
@@ -14,7 +15,29 @@ produtos_schema = ProdutoSchema(many=True)
 @produtos_bp.route("/produtos", methods=["GET"])
 def listar_produtos():
     produtos = Produto.query.all()
-    return jsonify(produtos_schema.dump(produtos)), 200
+
+    hoje = datetime.utcnow().date()
+    limite = hoje + timedelta(days=60)
+
+    resultado = []
+
+    for produto in produtos:
+        produto_dict = produto_schema.dump(produto)
+
+        if produto.data_validade:
+            produto_dict["perto_vencimento"] = (
+                hoje <= produto.data_validade <= limite
+            )
+            produto_dict["vencido"] = (
+                produto.data_validade < hoje
+            )
+        else:
+            produto_dict["perto_vencimento"] = False
+
+        resultado.append(produto_dict)
+
+    return jsonify(resultado), 200
+
 
 @produtos_bp.route("/produtos", methods=["POST"])
 def criar_produto():
