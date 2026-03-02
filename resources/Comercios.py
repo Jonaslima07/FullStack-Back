@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from marshmallow import ValidationError
 from sqlalchemy.exc import IntegrityError
 from flask_jwt_extended import jwt_required, get_jwt_identity
-
+from models.Usuarios import Usuario
 
 from models.Comercios import Comercio
 from schema.comercio_schema import ComercioSchema
@@ -58,7 +58,6 @@ def meu_comercio():
     }), 200
 
 
-
 @comercios_bp.route("/comercios", methods=["POST"])
 @jwt_required()
 def criar_comercio():
@@ -66,14 +65,11 @@ def criar_comercio():
         user_id = int(get_jwt_identity())
         dados = comercio_schema.load(request.json)
 
-       
-        comercio_existente = Comercio.query.filter_by(
-            usuario_id=user_id
-        ).first()
+        usuario = Usuario.query.get(user_id)
 
-        if comercio_existente:
+        if usuario.comercio_id:
             return jsonify({
-                "msg": "Este usuário já possui um comércio cadastrado"
+                "msg": "Usuário já possui comércio"
             }), 400
 
         comercio = Comercio(
@@ -81,11 +77,16 @@ def criar_comercio():
             segmento=dados.get("segmento"),
             telefone=dados["telefone"],
             cnpj=dados["cnpj"],
-            usuario_id=user_id, 
-            
+            usuario_id=user_id,
         )
 
         db.session.add(comercio)
+        db.session.commit()
+
+        # ✅ AQUI FALTAVA
+        usuario.comercio_id = comercio.id
+        usuario.cadastro_completo = True
+
         db.session.commit()
 
         cache.delete("comercios:lista")
@@ -100,7 +101,6 @@ def criar_comercio():
         return jsonify({
             "msg": "Telefone ou CNPJ já cadastrado"
         }), 409
-
 
 @comercios_bp.route("/comercios/<int:id>", methods=["PUT"])
 def atualizar_comercio(id):
