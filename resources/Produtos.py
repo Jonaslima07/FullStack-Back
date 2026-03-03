@@ -14,32 +14,37 @@ produto_schema = ProdutoSchema()
 produtos_schema = ProdutoSchema(many=True)
 
 
+
 @produtos_bp.route("/produtos", methods=["GET"])
+@jwt_required()
 def listar_produtos():
-    produtos = Produto.query.all()
 
-    hoje = datetime.utcnow().date()
-    limite = hoje + timedelta(days=60)
+    user_id = int(get_jwt_identity())
 
-    resultado = []
+    usuario = Usuario.query.get(user_id)
 
-    for produto in produtos:
-        produto_dict = produto_schema.dump(produto)
+    if not usuario:
+        return jsonify({"msg": "Usuário não encontrado"}), 404
 
-        if produto.data_validade:
-            produto_dict["perto_vencimento"] = (
-                hoje <= produto.data_validade <= limite
-            )
-            produto_dict["vencido"] = (
-                produto.data_validade < hoje
-            )
-        else:
-            produto_dict["perto_vencimento"] = False
+    produtos = Produto.query.filter_by(
+        comercio_id=usuario.comercio_id
+    ).all()
 
-        resultado.append(produto_dict)
+    lista = []
 
-    return jsonify(resultado), 200
+    for p in produtos:
+        lista.append({
+            "id": p.id,
+            "nome": p.nome,
+            "marca": p.marca,
+            "categoria": p.categoria,
+            "quantidade": p.quantidade,
+            "preco": p.preco,
+            "unidade": p.unidade,
+            "data_validade": str(p.data_validade)
+        })
 
+    return jsonify(lista), 200
 
 @produtos_bp.route("/produtos", methods=["POST"])
 @jwt_required()
