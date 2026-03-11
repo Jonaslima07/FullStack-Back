@@ -26,8 +26,10 @@ class UsuarioSchema(Schema):
     )
 
     photo = fields.Str(
-        dump_only=True  # 👈 vem do Google, só leitura
+        dump_only=True  
     )
+
+    comercio = fields.Str()
 
 
     @validates_schema

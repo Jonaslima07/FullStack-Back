@@ -17,6 +17,7 @@ completar_schema = CompletarCadastroSchema()
 
 
 @usuarios_bp.route("/usuarios", methods=["GET"])
+@jwt_required
 def capturar_usuarios():
     usuarios = Usuario.query.all()
     return jsonify(usuarios_schema.dump(usuarios)), 200
@@ -24,19 +25,23 @@ def capturar_usuarios():
 
 @usuarios_bp.route("/usuarios/me", methods=["GET"])
 @jwt_required()
-def obter_usuario_logado():
-    user_id = int(get_jwt_identity())
+def get_usuario_logado():
+    user_id = get_jwt_identity()
+
     usuario = Usuario.query.get(user_id)
 
-    if not usuario:
-        return jsonify({"error": "Usuário não encontrado"}), 404
-
-    return jsonify(usuario_schema.dump(usuario)), 200
-
+    return jsonify({
+        "id": usuario.id,
+        "nome": usuario.nome,
+        "email": usuario.email,
+        "photo": usuario.photo,
+        "comercio": usuario.comercio.nome_comercio if usuario.comercio else None
+    })
 
 
 
 @usuarios_bp.route("/usuarios", methods=["POST"])
+@jwt_required()
 def criar_usuario():
     try:
         dados = usuario_schema.load(request.json)
@@ -61,35 +66,33 @@ def criar_usuario():
 @usuarios_bp.route("/usuarios/completar-cadastro", methods=["POST"])
 @jwt_required()
 def completar_cadastro():
-    dados = request.get_json() or {}
 
-    cpf = dados.get("cpf")
-    senha = dados.get("senha")
+    json_data = request.get_json()
+    print("JSON RECEBIDO:", json_data)
 
-    if not cpf or not senha:
-        return jsonify({"error": "CPF e senha são obrigatórios"}), 400
+    try:
+        data = completar_schema.load(json_data)
+    except ValidationError as err:
+        print("ERRO DE VALIDAÇÃO:", err.messages)
+        return jsonify(err.messages), 422
+    
+    user_id = int(get_jwt_identity())
 
-    user_id = int(get_jwt_identity())  
     usuario = Usuario.query.get(user_id)
-  
 
     if not usuario:
         return jsonify({"error": "Usuário não encontrado"}), 404
 
-    if usuario.cadastro_completo:
-        return jsonify({"error": "Cadastro já completo"}), 400
-
-    usuario.cpf = cpf
-    usuario.senha = generate_password_hash(senha)
+    usuario.cpf = data["cpf"]
+    usuario.senha = generate_password_hash(data["senha"])
     usuario.cadastro_completo = True
 
     db.session.commit()
 
-    return jsonify({"message": "Cadastro completado com sucesso"}), 200
-
-
+    return jsonify({"msg": "Cadastro completo"}), 200
 
 @usuarios_bp.route("/usuarios/<int:id>", methods=["PUT"])
+@jwt_required()
 def atualizar_usuario(id):
     usuario = Usuario.query.get_or_404(id)
 
@@ -116,6 +119,7 @@ def atualizar_usuario(id):
 
 
 @usuarios_bp.route("/usuarios/<int:id>", methods=["DELETE"])
+@jwt_required()
 def deletar_usuario(id):
     usuario = Usuario.query.get(id)
 

@@ -26,10 +26,12 @@ def listar_produtos():
     if not usuario:
         return jsonify({"msg": "Usuário não encontrado"}), 404
 
-    produtos = Produto.query.filter_by(
-        comercio_id=usuario.comercio_id
-    ).all()
+  
 
+    produtos = Produto.query.filter_by(
+        comercio_id=usuario.comercio.id
+    ).all()
+    
     lista = []
 
     for p in produtos:
@@ -62,10 +64,10 @@ def criar_produto():
     if not usuario:
         return jsonify({"msg": "Usuário não encontrado"}), 404
 
-    if not usuario.comercio_id:
+    if not usuario.comercio:
         return jsonify({"msg": "Usuário sem comércio"}), 400
 
-    comercio_id = usuario.comercio_id
+    comercio_id = usuario.comercio.id
 
     produto = Produto(
         nome=dados["nome"],
@@ -82,6 +84,8 @@ def criar_produto():
     db.session.commit()
 
     return produto_schema.dump(produto), 201
+
+
 @produtos_bp.route("/produtos/<int:id>", methods=["PUT"])
 def atualizar_produtos(id):
 

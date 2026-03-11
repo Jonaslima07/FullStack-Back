@@ -67,7 +67,7 @@ def criar_comercio():
 
         usuario = Usuario.query.get(user_id)
 
-        if usuario.comercio_id:
+        if usuario.comercio:
             return jsonify({
                 "msg": "Usuário já possui comércio"
             }), 400
@@ -77,14 +77,11 @@ def criar_comercio():
             segmento=dados.get("segmento"),
             telefone=dados["telefone"],
             cnpj=dados["cnpj"],
-            usuario_id=user_id,
+            usuario_id=user_id
         )
 
         db.session.add(comercio)
-        db.session.commit()
 
-        # ✅ AQUI FALTAVA
-        usuario.comercio_id = comercio.id
         usuario.cadastro_completo = True
 
         db.session.commit()

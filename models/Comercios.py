@@ -12,8 +12,5 @@ class Comercio(db.Model):
     usuario_id = db.Column(
         db.Integer,
         db.ForeignKey("usuarios.id"),
-        nullable=False,
-        unique=True  
+        nullable=False
     )
-
-   

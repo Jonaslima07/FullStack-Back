@@ -1,4 +1,3 @@
-
 from helpers.database import db
 
 class Usuario(db.Model):
@@ -11,11 +10,5 @@ class Usuario(db.Model):
     cpf = db.Column(db.String(11), nullable=True)
     senha = db.Column(db.String(255), nullable=True)
     cadastro_completo = db.Column(db.Boolean, default=False)
-    comercio_id = db.Column(
-        db.Integer,
-        db.ForeignKey("comercios.id"),
-        nullable=True
-    )
 
-    def __repr__(self):
-        return f"<Usuario {self.email}>"
+    comercio = db.relationship("Comercio", backref="usuario", uselist=False)
