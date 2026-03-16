@@ -26,7 +26,6 @@ def listar_produtos():
     if not usuario:
         return jsonify({"msg": "Usuário não encontrado"}), 404
 
-  
 
     produtos = Produto.query.filter_by(
         comercio_id=usuario.comercio.id
@@ -42,6 +41,7 @@ def listar_produtos():
             "categoria": p.categoria,
             "quantidade": p.quantidade,
             "preco": p.preco,
+            "tipo": p.tipo,
             "unidade": p.unidade,
             "data_validade": str(p.data_validade)
         })
@@ -75,6 +75,7 @@ def criar_produto():
         quantidade=dados["quantidade"],
         preco=dados["preco"],
         marca=dados["marca"],
+        tipo=dados["tipo"],
         unidade=dados["unidade"],
         data_validade=dados["data_validade"],
         comercio_id=comercio_id
@@ -111,6 +112,10 @@ def atualizar_produtos(id):
 
     if "marca" in dados:
         produtos.marca = dados["marca"]
+
+    if "tipo" in dados:
+        produtos.marca = dados["tipo"]
+
 
     if "unidade" in dados:
         produtos.unidade = dados["unidade"]
